@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package blocker;
+
+option go_package = "/proto";
+
+import "proto/error/error.proto";
+import "google/protobuf/timestamp.proto";
+
+service BlockerEndpoint {
+  // GetBlockers получение блокеров пользователя
+  rpc GetBlockers (GetBlockersRequest) returns (GetBlockersResponse) {}
+
+  // CreateBlocker создание блокера. Задано ровно одно из blockingTaskID и reason. Циклы запрещены
+  rpc CreateBlocker (CreateBlockerRequest) returns (CreateBlockerResponse) {}
+
+  // ResolveBlocker ручное снятие блокера
+  rpc ResolveBlocker (ResolveBlockerRequest) returns (ResolveBlockerResponse) {}
+
+  // DeleteBlocker мягкое удаление блокера
+  rpc DeleteBlocker (DeleteBlockerRequest) returns (DeleteBlockerResponse) {}
+}
+
+// Blocker — ссылка на блокирующую задачу либо текстовая причина. Жив, пока нет resolvedAt
+message Blocker {
+  bytes id = 1;                                     // Идентификатор блокера
+  bytes taskID = 2;                                 // Заблокированная задача
+  optional bytes blockingTaskID = 3;                // Блокирующая задача
+  optional string reason = 4;                       // Текстовая причина
+  string sinceDay = 5;                              // Дата начала, yyyy-MM-dd
+  optional google.protobuf.Timestamp resolvedAt = 6; // Дата и время снятия
+  google.protobuf.Timestamp updatedAt = 7;          // Дата и время последнего изменения
+}
+
+message GetBlockersRequest {
+  string accessToken = 1;      // Токен доступа
+  repeated bytes taskIDs = 2;  // Фильтр по заблокированным задачам, пустой — все
+}
+
+message GetBlockersResponse {
+  optional error.Error error = 1; // Объект ошибки
+  repeated Blocker blockers = 2;   // Блокеры
+}
+
+message CreateBlockerRequest {
+  string accessToken = 1;                  // Токен доступа
+  bytes id = 2;                            // Идентификатор блокера, генерируется клиентом
+  bytes taskID = 3;                        // Заблокированная задача
+  optional bytes blockingTaskID = 4;       // Блокирующая задача
+  optional string reason = 5;              // Текстовая причина
+  string sinceDay = 6;                     // Дата начала, yyyy-MM-dd
+  google.protobuf.Timestamp updatedAt = 7; // Время создания на клиенте
+}
+
+message CreateBlockerResponse {
+  optional error.Error error = 1; // Объект ошибки
+}
+
+message ResolveBlockerRequest {
+  string accessToken = 1;                  // Токен доступа
+  bytes id = 2;                            // Идентификатор блокера
+  google.protobuf.Timestamp updatedAt = 3; // Время снятия на клиенте
+}
+
+message ResolveBlockerResponse {
+  optional error.Error error = 1; // Объект ошибки
+}
+
+message DeleteBlockerRequest {
+  string accessToken = 1;                  // Токен доступа
+  bytes id = 2;                            // Идентификатор блокера
+  google.protobuf.Timestamp updatedAt = 3; // Время удаления на клиенте, для разрешения конфликтов
+}
+
+message DeleteBlockerResponse {
+  optional error.Error error = 1; // Объект ошибки
+}

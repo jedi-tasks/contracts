@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package taskList;
+
+option go_package = "/proto";
+
+import "proto/error/error.proto";
+import "proto/enums/sortMode.proto";
+import "google/protobuf/timestamp.proto";
+
+service TaskListEndpoint {
+  // GetTaskLists получение всех списков пользователя
+  rpc GetTaskLists (GetTaskListsRequest) returns (GetTaskListsResponse) {}
+
+  // CreateTaskList создание списка
+  rpc CreateTaskList (CreateTaskListRequest) returns (CreateTaskListResponse) {}
+
+  // UpdateTaskList редактирование списка
+  rpc UpdateTaskList (UpdateTaskListRequest) returns (UpdateTaskListResponse) {}
+
+  // DeleteTaskList мягкое удаление списка вместе с его разделами и задачами. Inbox удалить нельзя
+  rpc DeleteTaskList (DeleteTaskListRequest) returns (DeleteTaskListResponse) {}
+}
+
+message TaskList {
+  bytes id = 1;                             // Идентификатор списка
+  string name = 2;                          // Название списка
+  bool isInbox = 3;                         // Системный список Inbox, у пользователя ровно один
+  string colorHex = 4;                      // Цвет списка, например #3E9BF0
+  string icon = 5;                          // SF Symbol иконки списка
+  double sortOrder = 6;                     // Порядок списка среди остальных
+  sortMode.SortMode sortMode = 7;           // Режим сортировки задач в списке
+  google.protobuf.Timestamp createdAt = 8;  // Дата и время создания
+  google.protobuf.Timestamp updatedAt = 9;  // Дата и время последнего изменения
+}
+
+message GetTaskListsRequest {
+  string accessToken = 1; // Токен доступа
+}
+
+message GetTaskListsResponse {
+  optional error.Error error = 1; // Объект ошибки
+  repeated TaskList taskLists = 2; // Списки пользователя
+}
+
+message CreateTaskListRequest {
+  string accessToken = 1;                  // Токен доступа
+  bytes id = 2;                            // Идентификатор списка, генерируется клиентом
+  string name = 3;                         // Название списка
+  string colorHex = 4;                     // Цвет списка
+  string icon = 5;                         // SF Symbol иконки списка
+  double sortOrder = 6;                    // Порядок списка
+  sortMode.SortMode sortMode = 7;          // Режим сортировки задач в списке
+  google.protobuf.Timestamp createdAt = 8; // Время создания на клиенте
+}
+
+message CreateTaskListResponse {
+  optional error.Error error = 1; // Объект ошибки
+}
+
+message UpdateTaskListRequest {
+  string accessToken = 1;                   // Токен доступа
+  bytes id = 2;                             // Идентификатор списка
+  optional string name = 3;                 // Название списка
+  optional string colorHex = 4;             // Цвет списка
+  optional string icon = 5;                 // SF Symbol иконки списка
+  optional double sortOrder = 6;            // Порядок списка
+  optional sortMode.SortMode sortMode = 7;  // Режим сортировки задач в списке
+  google.protobuf.Timestamp updatedAt = 8;  // Время изменения на клиенте, для разрешения конфликтов
+}
+
+message UpdateTaskListResponse {
+  optional error.Error error = 1; // Объект ошибки
+}
+
+message DeleteTaskListRequest {
+  string accessToken = 1;                  // Токен доступа
+  bytes id = 2;                            // Идентификатор списка
+  google.protobuf.Timestamp updatedAt = 3; // Время удаления на клиенте, для разрешения конфликтов
+}
+
+message DeleteTaskListResponse {
+  optional error.Error error = 1; // Объект ошибки
+}

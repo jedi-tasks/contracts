@@ -1,0 +1,53 @@
+name: 'Go Server Build'
+description: 'Builds Go server from generated proto files'
+
+inputs:
+  proto-path:
+    description: 'Path to proto files'
+    required: true
+  repo-path:
+    description: 'Path to output directory for generated Go files'
+    required: true
+  artifact-name:
+    description: 'Name of the artifact to upload'
+    required: true
+  artifact-name-with-proto:
+    description: 'Name of the artifact to upload with proto files'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.24'
+        
+    - name: Install protoc and Go plugins
+      shell: bash
+      run: |
+        sudo apt-get install -y protobuf-compiler
+        go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+        go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+        
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ inputs.repo-path }}
+            
+    - name: Generate Go files from proto
+      shell: bash
+      run: |
+        protoc --experimental_allow_proto3_optional \
+          -I ./ \
+          --go_out=${{ inputs.repo-path }} \
+          --go-grpc_out=${{ inputs.repo-path }} \
+          ${{ inputs.proto-path }}
+          
+    - name: Upload generated files
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name-with-proto }}
+        path: ${{ inputs.repo-path }}
+        include-hidden-files: true
