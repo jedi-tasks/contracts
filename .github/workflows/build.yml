@@ -28,13 +28,25 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
     steps:
+      # PAT_TOKEN из Vault по GitHub OIDC (роль ci-tasks-contracts)
+      - name: Import secrets from Vault
+        uses: hashicorp/vault-action@v3
+        with:
+          url: https://vault.bonavii.com
+          method: jwt
+          role: ci-tasks-contracts
+          jwtGithubAudience: https://github.com/jedi-tasks
+          secrets: |
+            secret/data/ci/jedi-tasks/github-deploy PAT_TOKEN
+
       - uses: actions/checkout@v4
       
       - name: Clone Repository
         uses: ./.github/actions/clone-repos
         with:
-          token: ${{ secrets.PAT_TOKEN }}
+          token: ${{ env.PAT_TOKEN }}
           user: ${{ env.USER }}
           artifact-name: ${{ env.SERVER_ARTIFACT_NAME }}
           repo-path: ${{ env.SERVER_GRPC_REPO_PATH }}
@@ -45,13 +57,25 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
     steps:
+      # PAT_TOKEN из Vault по GitHub OIDC (роль ci-tasks-contracts)
+      - name: Import secrets from Vault
+        uses: hashicorp/vault-action@v3
+        with:
+          url: https://vault.bonavii.com
+          method: jwt
+          role: ci-tasks-contracts
+          jwtGithubAudience: https://github.com/jedi-tasks
+          secrets: |
+            secret/data/ci/jedi-tasks/github-deploy PAT_TOKEN
+
       - uses: actions/checkout@v4
 
       - name: Clone Repository
         uses: ./.github/actions/clone-repos
         with:
-          token: ${{ secrets.PAT_TOKEN }}
+          token: ${{ env.PAT_TOKEN }}
           user: ${{ env.USER }}
           artifact-name: ${{ env.CLIENT_ARTIFACT_NAME }}
           repo-path: ${{ env.CLIENT_GRPC_REPO_PATH }}
@@ -93,7 +117,19 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
     steps:
+      # PAT_TOKEN из Vault по GitHub OIDC (роль ci-tasks-contracts)
+      - name: Import secrets from Vault
+        uses: hashicorp/vault-action@v3
+        with:
+          url: https://vault.bonavii.com
+          method: jwt
+          role: ci-tasks-contracts
+          jwtGithubAudience: https://github.com/jedi-tasks
+          secrets: |
+            secret/data/ci/jedi-tasks/github-deploy PAT_TOKEN
+
       - uses: actions/checkout@v4
 
       - name: Commit Changes to Go Server
@@ -101,7 +137,7 @@ jobs:
         with:
           repo-path: ${{ env.SERVER_GRPC_REPO_PATH }}
           repo-url: ${{ env.SERVER_GRPC_REPO_URL }}
-          token: ${{ secrets.PAT_TOKEN }}
+          token: ${{ env.PAT_TOKEN }}
           user: ${{ env.USER }}
           artifact-name: ${{ env.SERVER_ARTIFACT_NAME_WITH_PROTO }}
           commit-sha: ${{ github.sha }}
@@ -115,7 +151,19 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
     steps:
+      # PAT_TOKEN из Vault по GitHub OIDC (роль ci-tasks-contracts)
+      - name: Import secrets from Vault
+        uses: hashicorp/vault-action@v3
+        with:
+          url: https://vault.bonavii.com
+          method: jwt
+          role: ci-tasks-contracts
+          jwtGithubAudience: https://github.com/jedi-tasks
+          secrets: |
+            secret/data/ci/jedi-tasks/github-deploy PAT_TOKEN
+
       - uses: actions/checkout@v4
 
       - name: Commit Changes to Swift Client
@@ -123,7 +171,7 @@ jobs:
         with:
           repo-path: ${{ env.CLIENT_GRPC_REPO_PATH }}
           repo-url: ${{ env.CLIENT_GRPC_REPO_URL }}
-          token: ${{ secrets.PAT_TOKEN }}
+          token: ${{ env.PAT_TOKEN }}
           user: ${{ env.USER }}
           artifact-name: ${{ env.CLIENT_ARTIFACT_NAME_WITH_PROTO }}
           commit-sha: ${{ github.sha }}
