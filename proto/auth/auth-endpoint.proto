@@ -38,6 +38,7 @@ message DeviceInformation {
   osType.OSType nameOS = 3;     // Название операционной системы
   string versionOS = 4;          // Версия операционной системы
   string ipAddress = 5;        // IP адрес
+  bool stateless = 6;          // Устройство без локальной копии данных: всегда читает сервер перед записью, проверка синхронизации перед правками не нужна
 }
 
 message SignInRequest {
