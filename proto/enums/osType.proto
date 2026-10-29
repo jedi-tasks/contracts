@@ -11,4 +11,5 @@ enum OSType {
   IPadOS = 3;
   OSX = 4;
   WatchOS = 5;
+  Server = 6; // Устройство на стороне сервера, например MCP
 }
