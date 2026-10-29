@@ -39,7 +39,7 @@ jobs:
           role: gh-jedi-tasks-contracts-generate
           jwtGithubAudience: https://github.com/jedi-tasks
           secrets: |
-            secret/data/ci/jedi-tasks/github-pat PAT_TOKEN
+            secret/data/jedi-tasks/ci/github-pat PAT_TOKEN
 
       - uses: actions/checkout@v4
       
@@ -68,7 +68,7 @@ jobs:
           role: gh-jedi-tasks-contracts-generate
           jwtGithubAudience: https://github.com/jedi-tasks
           secrets: |
-            secret/data/ci/jedi-tasks/github-pat PAT_TOKEN
+            secret/data/jedi-tasks/ci/github-pat PAT_TOKEN
 
       - uses: actions/checkout@v4
 
@@ -128,7 +128,7 @@ jobs:
           role: gh-jedi-tasks-contracts-generate
           jwtGithubAudience: https://github.com/jedi-tasks
           secrets: |
-            secret/data/ci/jedi-tasks/github-pat PAT_TOKEN
+            secret/data/jedi-tasks/ci/github-pat PAT_TOKEN
 
       - uses: actions/checkout@v4
 
@@ -162,7 +162,7 @@ jobs:
           role: gh-jedi-tasks-contracts-generate
           jwtGithubAudience: https://github.com/jedi-tasks
           secrets: |
-            secret/data/ci/jedi-tasks/github-pat PAT_TOKEN
+            secret/data/jedi-tasks/ci/github-pat PAT_TOKEN
 
       - uses: actions/checkout@v4
 
