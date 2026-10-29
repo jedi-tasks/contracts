@@ -1,0 +1,91 @@
+syntax = "proto3";
+
+package sync;
+
+option go_package = "/proto";
+
+import "proto/error/error.proto";
+import "proto/user/user-endpoint.proto";
+import "proto/settings/settings-endpoint.proto";
+import "proto/taskList/taskList-endpoint.proto";
+import "proto/listSection/listSection-endpoint.proto";
+import "proto/priority/priority-endpoint.proto";
+import "proto/durationOption/durationOption-endpoint.proto";
+import "proto/task/task-endpoint.proto";
+import "proto/tag/tag-endpoint.proto";
+import "proto/blocker/blocker-endpoint.proto";
+
+service SyncEndpoint {
+  // Sync атомарно получает все изменения пользователя, произошедшие после чекпоинта, переданного
+  // клиентом. Хранение чекпоинта - на стороне клиента. Возвращённый pendingCheckpoint/pendingSyncToken
+  // нужно подтвердить вызовом ConfirmSync после того, как клиент корректно применит полученные изменения
+  rpc Sync (SyncRequest) returns (SyncResponse) {}
+
+  // ConfirmSync подтверждает, что клиент корректно применил изменения, полученные последним
+  // вызовом Sync, и просит бэкенд запомнить новый чекпоинт устройства
+  rpc ConfirmSync (ConfirmSyncRequest) returns (ConfirmSyncResponse) {}
+
+  // SubscribeToSync — server-streaming уведомитель: держит соединение открытым и присылает
+  // пустой SyncNotification каждый раз, когда для пользователя появились изменения (создана
+  // новая запись аудит-лога). НЕ несёт сам payload изменений — получив сигнал, клиент должен
+  // сам вызвать обычный Sync/ConfirmSync. Клиент отключается при уходе в фон и переиспользует
+  // обычный периодический Sync как fallback
+  rpc SubscribeToSync (SubscribeToSyncRequest) returns (stream SyncNotification) {}
+}
+
+message SyncRequest {
+  string accessToken = 1; // Токен доступа
+  uint32 sinceID = 2;     // Чекпоинт устройства - идентификатор последней подтвержденной записи аудит-лога
+}
+
+message SyncResponse {
+  optional error.Error error = 1; // Объект ошибки
+
+  uint32 pendingCheckpoint = 2; // Новый чекпоинт, который нужно подтвердить вызовом ConfirmSync после применения изменений
+  bytes pendingSyncToken = 3;   // Опорный токен этого ответа, передается в ConfirmSync. Пустой, если изменений не было
+  bool hasChanges = 4;          // true, если в ответе есть изменения (pendingCheckpoint больше sinceID из запроса)
+
+  repeated taskList.TaskList changedTaskLists = 5; // Созданные/изменённые списки
+  repeated bytes deletedTaskListIDs = 6;           // Удалённые списки
+
+  repeated listSection.ListSection changedListSections = 7; // Созданные/изменённые разделы
+  repeated bytes deletedListSectionIDs = 8;                 // Удалённые разделы
+
+  repeated priority.Priority changedPriorities = 9; // Созданные/изменённые приоритеты
+  repeated bytes deletedPriorityIDs = 10;           // Удалённые приоритеты
+
+  repeated durationOption.DurationOption changedDurationOptions = 11; // Созданные/изменённые длительности
+  repeated bytes deletedDurationOptionIDs = 12;                       // Удалённые длительности
+
+  repeated task.Task changedTasks = 13; // Созданные/изменённые задачи
+  repeated bytes deletedTaskIDs = 14;   // Удалённые задачи
+
+  repeated tag.Tag changedTags = 15;  // Созданные/изменённые теги
+  repeated bytes deletedTagIDs = 16;  // Удалённые теги
+
+  repeated tag.TaskToTag addedTasksToTags = 17;   // Добавленные связи задач и тегов
+  repeated tag.TaskToTag removedTasksToTags = 18; // Удалённые связи задач и тегов
+
+  repeated blocker.Blocker changedBlockers = 19; // Созданные/изменённые блокеры
+  repeated bytes deletedBlockerIDs = 20;         // Удалённые блокеры
+
+  optional settings.Settings changedSettings = 21; // Изменённые настройки, если менялись
+  optional user.User changedUser = 22;             // Изменённые данные пользователя, если менялись
+}
+
+message ConfirmSyncRequest {
+  string accessToken = 1;     // Токен доступа
+  bytes pendingSyncToken = 2; // Опорный токен из ответа Sync, который нужно подтвердить
+}
+
+message ConfirmSyncResponse {
+  optional error.Error error = 1; // Объект ошибки
+}
+
+message SubscribeToSyncRequest {
+  string accessToken = 1; // Токен доступа
+}
+
+// Пустое сообщение-сигнал — "у тебя есть что засинкать", без самих данных.
+message SyncNotification {
+}

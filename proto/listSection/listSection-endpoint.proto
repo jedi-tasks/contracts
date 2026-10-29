@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package listSection;
+
+option go_package = "/proto";
+
+import "proto/error/error.proto";
+import "google/protobuf/timestamp.proto";
+
+service ListSectionEndpoint {
+  // GetListSections получение всех разделов пользователя
+  rpc GetListSections (GetListSectionsRequest) returns (GetListSectionsResponse) {}
+
+  // CreateListSection создание раздела
+  rpc CreateListSection (CreateListSectionRequest) returns (CreateListSectionResponse) {}
+
+  // UpdateListSection редактирование раздела
+  rpc UpdateListSection (UpdateListSectionRequest) returns (UpdateListSectionResponse) {}
+
+  // DeleteListSection мягкое удаление раздела. Задачи раздела остаются в списке без раздела
+  rpc DeleteListSection (DeleteListSectionRequest) returns (DeleteListSectionResponse) {}
+}
+
+message ListSection {
+  bytes id = 1;                            // Идентификатор раздела
+  bytes listID = 2;                        // Идентификатор списка
+  string name = 3;                         // Название раздела
+  double sortOrder = 4;                    // Порядок раздела внутри списка
+  google.protobuf.Timestamp updatedAt = 5; // Дата и время последнего изменения
+}
+
+message GetListSectionsRequest {
+  string accessToken = 1;      // Токен доступа
+  repeated bytes listIDs = 2;  // Фильтр по спискам, пустой — все
+}
+
+message GetListSectionsResponse {
+  optional error.Error error = 1;       // Объект ошибки
+  repeated ListSection listSections = 2; // Разделы
+}
+
+message CreateListSectionRequest {
+  string accessToken = 1;                  // Токен доступа
+  bytes id = 2;                            // Идентификатор раздела, генерируется клиентом
+  bytes listID = 3;                        // Идентификатор списка
+  string name = 4;                         // Название раздела
+  double sortOrder = 5;                    // Порядок раздела
+  google.protobuf.Timestamp updatedAt = 6; // Время создания на клиенте
+}
+
+message CreateListSectionResponse {
+  optional error.Error error = 1; // Объект ошибки
+}
+
+message UpdateListSectionRequest {
+  string accessToken = 1;                  // Токен доступа
+  bytes id = 2;                            // Идентификатор раздела
+  optional bytes listID = 3;               // Перенос раздела в другой список
+  optional string name = 4;                // Название раздела
+  optional double sortOrder = 5;           // Порядок раздела
+  google.protobuf.Timestamp updatedAt = 6; // Время изменения на клиенте, для разрешения конфликтов
+}
+
+message UpdateListSectionResponse {
+  optional error.Error error = 1; // Объект ошибки
+}
+
+message DeleteListSectionRequest {
+  string accessToken = 1;                  // Токен доступа
+  bytes id = 2;                            // Идентификатор раздела
+  google.protobuf.Timestamp updatedAt = 3; // Время удаления на клиенте, для разрешения конфликтов
+}
+
+message DeleteListSectionResponse {
+  optional error.Error error = 1; // Объект ошибки
+}

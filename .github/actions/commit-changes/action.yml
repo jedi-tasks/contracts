@@ -1,0 +1,76 @@
+name: 'Commit Changes'
+description: 'Commits and pushes changes to repository'
+
+inputs:
+  repo-path:
+    description: 'Path to repository'
+    required: true
+  repo-url:
+    description: 'Git repository URL (without scheme), e.g. github.com/owner/repo'
+    required: true
+  token:
+    description: 'Git token'
+    required: true
+  user:
+    description: 'Git username'
+    required: true
+  commit-sha:
+    description: 'Commit SHA'
+    required: true
+  tag-version:
+    description: 'Tag version'
+    required: true
+  user-email:
+    description: 'Git user email'
+    required: true
+  user-name:
+    description: 'Git user name'
+    required: true
+  artifact-name:
+    description: 'Name of the artifact to download'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: Download Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ inputs.repo-path }}
+
+    - name: Configure Git
+      shell: bash
+      run: |
+        cd ${{ inputs.repo-path }}
+        git config --global user.email "${{ inputs.user-email }}"
+        git config --global user.name "${{ inputs.user-name }}"
+        git remote set-url origin "https://${{ inputs.user }}:${{ inputs.token }}@${{ inputs.repo-url }}.git"
+
+    - name: Clear old compiled files
+      shell: bash
+      run: |
+          cd ${{ inputs.repo-path }}
+          find . -type f -name '*.go' -exec rm -f {} +
+          find . -type f -name '*.swift' -exec rm -f {} +
+
+    - name: Download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ inputs.repo-path }}
+
+    - name: Commit and push changes
+      shell: bash
+      run: |
+        cd ${{ inputs.repo-path }}
+        git add .
+        git commit -m "${{ inputs.commit-sha }}"
+        
+        # Create and push tag
+        git tag -a "${{ inputs.tag-version }}" -m "Release ${{ inputs.tag-version }}"
+        git push origin tag "${{ inputs.tag-version }}"
+        
+        # Push changes
+        git push -u origin main 

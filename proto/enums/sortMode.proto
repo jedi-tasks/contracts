@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package sortMode;
+
+option go_package = "/proto";
+
+enum SortMode {
+  Unspecified = 0;
+  Manual = 1;     // Вручную
+  Priority = 2;   // По приоритету
+  PlannedDay = 3; // По планируемому сроку
+  Deadline = 4;   // По дедлайну
+  Duration = 5;   // По длительности
+}

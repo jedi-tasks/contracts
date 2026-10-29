@@ -1,0 +1,180 @@
+name: Build and Deploy
+
+on:
+  push:
+    tags:
+      - v*
+
+env:
+  USER: 'bonavi'
+  PUSH_USER_NAME: 'CI Push Bot'
+  PUSH_USER_EMAIL: 'bonavii@icloud.com'
+
+  SERVER_GRPC_REPO_URL: 'github.com/jedi-tasks/go-server-grpc'
+  SERVER_GRPC_REPO_PATH: 'go-server-grpc'
+  SERVER_KIND: 'server'
+  SERVER_ARTIFACT_NAME: 'server'
+  SERVER_ARTIFACT_NAME_WITH_PROTO: 'server-with-proto'
+
+  CLIENT_GRPC_REPO_URL: 'github.com/jedi-tasks/swift-client-grpc'
+  CLIENT_GRPC_REPO_PATH: 'swift-client-grpc'
+  CLIENT_KIND: 'client'
+  CLIENT_ARTIFACT_NAME: 'client'
+  CLIENT_ARTIFACT_NAME_WITH_PROTO: 'client-with-proto'
+
+jobs:
+  clone-server-grpc-repo:
+    name: Clone current gRPC-Server
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      # PAT_TOKEN из Vault по GitHub OIDC (роль ci-tasks-contracts)
+      - name: Import secrets from Vault
+        uses: hashicorp/vault-action@v3
+        with:
+          url: https://vault.bonavii.com
+          method: jwt
+          role: ci-tasks-contracts
+          jwtGithubAudience: https://github.com/jedi-tasks
+          secrets: |
+            secret/data/ci/jedi-tasks/github-deploy PAT_TOKEN
+
+      - uses: actions/checkout@v4
+      
+      - name: Clone Repository
+        uses: ./.github/actions/clone-repos
+        with:
+          token: ${{ env.PAT_TOKEN }}
+          user: ${{ env.USER }}
+          artifact-name: ${{ env.SERVER_ARTIFACT_NAME }}
+          repo-path: ${{ env.SERVER_GRPC_REPO_PATH }}
+          repo-url: ${{ env.SERVER_GRPC_REPO_URL }}
+
+  clone-client-grpc-repo:
+    name: Clone current gRPC-Client
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      # PAT_TOKEN из Vault по GitHub OIDC (роль ci-tasks-contracts)
+      - name: Import secrets from Vault
+        uses: hashicorp/vault-action@v3
+        with:
+          url: https://vault.bonavii.com
+          method: jwt
+          role: ci-tasks-contracts
+          jwtGithubAudience: https://github.com/jedi-tasks
+          secrets: |
+            secret/data/ci/jedi-tasks/github-deploy PAT_TOKEN
+
+      - uses: actions/checkout@v4
+
+      - name: Clone Repository
+        uses: ./.github/actions/clone-repos
+        with:
+          token: ${{ env.PAT_TOKEN }}
+          user: ${{ env.USER }}
+          artifact-name: ${{ env.CLIENT_ARTIFACT_NAME }}
+          repo-path: ${{ env.CLIENT_GRPC_REPO_PATH }}
+          repo-url: ${{ env.CLIENT_GRPC_REPO_URL }}
+
+  server-build:
+    name: Build Go Server
+    needs: [clone-server-grpc-repo, clone-client-grpc-repo]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Go Server
+        uses: ./.github/actions/go-server-build
+        with:
+          proto-path: './proto/*/*.proto'
+          repo-path: ${{ env.SERVER_GRPC_REPO_PATH }}
+          artifact-name: ${{ env.SERVER_ARTIFACT_NAME }}
+          artifact-name-with-proto: ${{ env.SERVER_ARTIFACT_NAME_WITH_PROTO }}
+
+  client-build:
+    name: Build Swift Client
+    needs: [clone-server-grpc-repo, clone-client-grpc-repo]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Swift Client
+        uses: ./.github/actions/swift-client-build
+        with:
+          proto-path: './proto/*/*.proto'
+          repo-path: ${{ env.CLIENT_GRPC_REPO_PATH }}
+          artifact-name: ${{ env.CLIENT_ARTIFACT_NAME }}
+          artifact-name-with-proto: ${{ env.CLIENT_ARTIFACT_NAME_WITH_PROTO }}
+
+  commit-server:
+    name: Push Go Server Changes
+    needs: [server-build, client-build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      # PAT_TOKEN из Vault по GitHub OIDC (роль ci-tasks-contracts)
+      - name: Import secrets from Vault
+        uses: hashicorp/vault-action@v3
+        with:
+          url: https://vault.bonavii.com
+          method: jwt
+          role: ci-tasks-contracts
+          jwtGithubAudience: https://github.com/jedi-tasks
+          secrets: |
+            secret/data/ci/jedi-tasks/github-deploy PAT_TOKEN
+
+      - uses: actions/checkout@v4
+
+      - name: Commit Changes to Go Server
+        uses: ./.github/actions/commit-changes
+        with:
+          repo-path: ${{ env.SERVER_GRPC_REPO_PATH }}
+          repo-url: ${{ env.SERVER_GRPC_REPO_URL }}
+          token: ${{ env.PAT_TOKEN }}
+          user: ${{ env.USER }}
+          artifact-name: ${{ env.SERVER_ARTIFACT_NAME_WITH_PROTO }}
+          commit-sha: ${{ github.sha }}
+          tag-version: ${{ github.ref_name }}
+          user-email: ${{ env.PUSH_USER_EMAIL }}
+          user-name: ${{ env.PUSH_USER_NAME }}
+
+  commit-client:
+    name: Push Swift Client Changes
+    needs: [server-build, client-build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      # PAT_TOKEN из Vault по GitHub OIDC (роль ci-tasks-contracts)
+      - name: Import secrets from Vault
+        uses: hashicorp/vault-action@v3
+        with:
+          url: https://vault.bonavii.com
+          method: jwt
+          role: ci-tasks-contracts
+          jwtGithubAudience: https://github.com/jedi-tasks
+          secrets: |
+            secret/data/ci/jedi-tasks/github-deploy PAT_TOKEN
+
+      - uses: actions/checkout@v4
+
+      - name: Commit Changes to Swift Client
+        uses: ./.github/actions/commit-changes
+        with:
+          repo-path: ${{ env.CLIENT_GRPC_REPO_PATH }}
+          repo-url: ${{ env.CLIENT_GRPC_REPO_URL }}
+          token: ${{ env.PAT_TOKEN }}
+          user: ${{ env.USER }}
+          artifact-name: ${{ env.CLIENT_ARTIFACT_NAME_WITH_PROTO }}
+          commit-sha: ${{ github.sha }}
+          tag-version: ${{ github.ref_name }}
+          user-email: ${{ env.PUSH_USER_EMAIL }}
+          user-name: ${{ env.PUSH_USER_NAME }}

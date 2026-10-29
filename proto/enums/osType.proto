@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package osType;
+
+option go_package = "/proto";
+
+enum OSType {
+  Unspecified = 0;
+  Android = 1;
+  IOS = 2;
+  IPadOS = 3;
+  OSX = 4;
+  WatchOS = 5;
+}

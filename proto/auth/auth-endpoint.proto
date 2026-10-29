@@ -1,0 +1,90 @@
+syntax = "proto3";
+
+package auth;
+
+option go_package = "/proto";
+
+import "proto/error/error.proto";
+import "proto/enums/osType.proto";
+
+service AuthEndpoint {
+  // SignIn авторизация пользователя по логину и паролю
+  rpc SignIn (SignInRequest) returns (SignInResponse) {}
+
+  // SignUp регистрация пользователя
+  rpc SignUp (SignUpRequest) returns (SignUpResponse) {}
+
+  // SignOut выход пользователя из приложения
+  rpc SignOut (SignOutRequest) returns (SignOutResponse) {}
+
+  // RefreshTokens обновление токенов
+  rpc RefreshTokens (RefreshTokensRequest) returns (RefreshTokensResponse) {}
+}
+
+message Tokens {
+  string accessToken = 1;  // Токен доступа
+  string refreshToken = 2; // Токен восстановления доступа
+}
+
+message ApplicationInformation {
+  string version = 1;  // Версия приложения
+  string build = 2;    // Билд приложения
+  string bundleID = 3; // Бандл приложения
+}
+
+message DeviceInformation {
+  string deviceName = 1;         // Название девайса
+  string modelName = 2;          // Название модели
+  osType.OSType nameOS = 3;     // Название операционной системы
+  string versionOS = 4;          // Версия операционной системы
+  string ipAddress = 5;        // IP адрес
+}
+
+message SignInRequest {
+  string email = 1;    // Электронная почта пользователя
+  string password = 2; // Пароль пользователя
+  ApplicationInformation application = 3; // Информация о приложении
+  DeviceInformation device = 4;           // Информация о девайсе
+  string deviceID = 5;         // Идентификатор устройства
+}
+
+message SignInResponse {
+  optional error.Error error = 1; // Объект ошибки
+  optional bytes id = 2;           // Идентификатор пользователя
+  optional Tokens token = 3;       // Токены доступа
+}
+
+message SignUpRequest {
+  string name = 1;     // Имя пользователя
+  string email = 2;    // Электронная почта пользователя
+  string password = 3; // Пароль пользователя
+  ApplicationInformation application = 4; // Информация о приложении
+  DeviceInformation device = 5;           // Информация о девайсе
+  string deviceID = 6;         // Идентификатор устройства
+}
+
+message SignUpResponse {
+  optional error.Error error = 1; // Объект ошибки
+  optional bytes id = 2;           // Идентификатор пользователя
+  optional Tokens token = 3;       // Токены доступа
+}
+
+message SignOutRequest {
+  string accessToken = 1; // Токен доступа
+}
+
+message SignOutResponse {
+  optional error.Error error = 1; // Объект ошибки
+}
+
+message RefreshTokensRequest {
+  string token = 1; // Токен восстановления доступа
+  optional ApplicationInformation application = 2; // Информация о приложении
+  optional DeviceInformation device = 3;           // Информация о девайсе
+}
+
+message RefreshTokensResponse {
+  optional error.Error error = 1; // Объект ошибки
+  optional string accessToken = 2;  // Токен доступа
+  optional string refreshToken = 3; // Токен восстановления доступа
+}

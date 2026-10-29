@@ -1,0 +1,118 @@
+syntax = "proto3";
+
+package task;
+
+option go_package = "/proto";
+
+import "proto/error/error.proto";
+import "google/protobuf/timestamp.proto";
+
+service TaskEndpoint {
+  // GetTasks получение задач пользователя по фильтру
+  rpc GetTasks (GetTasksRequest) returns (GetTasksResponse) {}
+
+  // CreateTask создание задачи. Без listID задача попадает в Inbox
+  rpc CreateTask (CreateTaskRequest) returns (CreateTaskResponse) {}
+
+  // UpdateTask редактирование задачи
+  rpc UpdateTask (UpdateTaskRequest) returns (UpdateTaskResponse) {}
+
+  // SetTaskCompleted выполнение задачи или возврат в работу. При выполнении снимаются
+  // блокеры, ссылающиеся на эту задачу
+  rpc SetTaskCompleted (SetTaskCompletedRequest) returns (SetTaskCompletedResponse) {}
+
+  // DeleteTask мягкое удаление задачи
+  rpc DeleteTask (DeleteTaskRequest) returns (DeleteTaskResponse) {}
+}
+
+message Task {
+  bytes id = 1;                                      // Идентификатор задачи
+  bytes listID = 2;                                  // Идентификатор списка
+  optional bytes sectionID = 3;                      // Идентификатор раздела
+  string title = 4;                                  // Название задачи
+  string notes = 5;                                  // Описание
+  optional bytes priorityID = 6;                     // Идентификатор приоритета, нет — «не разобрано»
+  optional string plannedDay = 7;                    // Планируемый срок, yyyy-MM-dd
+  optional string deadlineDay = 8;                   // Дедлайн, yyyy-MM-dd
+  optional int32 durationMinutes = 9;                // Планируемое время в минутах
+  double manualOrder = 10;                           // Ручной порядок внутри списка
+  optional google.protobuf.Timestamp completedAt = 11; // Дата и время выполнения
+  optional string externalID = 12;                   // Идентификатор напоминания, из которого импортирована задача
+  google.protobuf.Timestamp createdAt = 13;          // Дата и время создания
+  google.protobuf.Timestamp updatedAt = 14;          // Дата и время последнего изменения
+}
+
+message GetTasksRequest {
+  string accessToken = 1;          // Токен доступа
+  repeated bytes listIDs = 2;      // Фильтр по спискам, пустой — все
+  repeated bytes ids = 3;          // Фильтр по идентификаторам задач, пустой — все
+  optional bool completed = 4;     // Фильтр по выполненности, нет — все
+}
+
+message GetTasksResponse {
+  optional error.Error error = 1; // Объект ошибки
+  repeated Task tasks = 2;         // Задачи
+}
+
+message CreateTaskRequest {
+  string accessToken = 1;                   // Токен доступа
+  bytes id = 2;                             // Идентификатор задачи, генерируется клиентом
+  optional bytes listID = 3;                // Идентификатор списка, нет — Inbox
+  optional bytes sectionID = 4;             // Идентификатор раздела
+  string title = 5;                         // Название задачи
+  string notes = 6;                         // Описание
+  optional bytes priorityID = 7;            // Идентификатор приоритета
+  optional string plannedDay = 8;           // Планируемый срок, yyyy-MM-dd
+  optional string deadlineDay = 9;          // Дедлайн, yyyy-MM-dd
+  optional int32 durationMinutes = 10;      // Планируемое время в минутах
+  double manualOrder = 11;                  // Ручной порядок
+  optional string externalID = 12;          // Идентификатор напоминания при импорте
+  google.protobuf.Timestamp createdAt = 13; // Время создания на клиенте
+}
+
+message CreateTaskResponse {
+  optional error.Error error = 1; // Объект ошибки
+}
+
+// UpdateTaskRequest меняет только переданные поля. Для полей, которые могут быть пустыми,
+// пустое значение сбрасывает их: пустые bytes — нет раздела/приоритета, пустая строка — нет даты,
+// 0 — нет оценки длительности
+message UpdateTaskRequest {
+  string accessToken = 1;                  // Токен доступа
+  bytes id = 2;                            // Идентификатор задачи
+  optional bytes listID = 3;               // Перенос в другой список
+  optional bytes sectionID = 4;            // Раздел, пустые bytes — без раздела
+  optional string title = 5;               // Название задачи
+  optional string notes = 6;               // Описание
+  optional bytes priorityID = 7;           // Приоритет, пустые bytes — «не разобрано»
+  optional string plannedDay = 8;          // Планируемый срок, пустая строка — без срока
+  optional string deadlineDay = 9;         // Дедлайн, пустая строка — без дедлайна
+  optional int32 durationMinutes = 10;     // Планируемое время, 0 — без оценки
+  optional double manualOrder = 11;        // Ручной порядок
+  google.protobuf.Timestamp updatedAt = 12; // Время изменения на клиенте, для разрешения конфликтов
+}
+
+message UpdateTaskResponse {
+  optional error.Error error = 1; // Объект ошибки
+}
+
+message SetTaskCompletedRequest {
+  string accessToken = 1;                  // Токен доступа
+  bytes id = 2;                            // Идентификатор задачи
+  bool completed = 3;                      // true — выполнить, false — вернуть в работу
+  google.protobuf.Timestamp updatedAt = 4; // Время действия на клиенте, оно же время выполнения
+}
+
+message SetTaskCompletedResponse {
+  optional error.Error error = 1; // Объект ошибки
+}
+
+message DeleteTaskRequest {
+  string accessToken = 1;                  // Токен доступа
+  bytes id = 2;                            // Идентификатор задачи
+  google.protobuf.Timestamp updatedAt = 3; // Время удаления на клиенте, для разрешения конфликтов
+}
+
+message DeleteTaskResponse {
+  optional error.Error error = 1; // Объект ошибки
+}

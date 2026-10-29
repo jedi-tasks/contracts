@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package priority;
+
+option go_package = "/proto";
+
+import "proto/error/error.proto";
+import "google/protobuf/timestamp.proto";
+
+service PriorityEndpoint {
+  // GetPriorities получение справочника приоритетов
+  rpc GetPriorities (GetPrioritiesRequest) returns (GetPrioritiesResponse) {}
+
+  // CreatePriority создание уровня приоритета
+  rpc CreatePriority (CreatePriorityRequest) returns (CreatePriorityResponse) {}
+
+  // UpdatePriority редактирование уровня приоритета
+  rpc UpdatePriority (UpdatePriorityRequest) returns (UpdatePriorityResponse) {}
+
+  // DeletePriority мягкое удаление уровня. Задачи с ним становятся «не разобрано»
+  rpc DeletePriority (DeletePriorityRequest) returns (DeletePriorityResponse) {}
+}
+
+// Priority — уровень из справочника. Меньший sortOrder — важнее
+message Priority {
+  bytes id = 1;                            // Идентификатор приоритета
+  string name = 2;                         // Название, например «1 — ближайшие дни»
+  string colorHex = 3;                     // Цвет приоритета
+  string marks = 4;                        // Знаки в строке задачи, например !!!
+  double sortOrder = 5;                    // Порядок важности
+  google.protobuf.Timestamp updatedAt = 6; // Дата и время последнего изменения
+}
+
+message GetPrioritiesRequest {
+  string accessToken = 1; // Токен доступа
+}
+
+message GetPrioritiesResponse {
+  optional error.Error error = 1;  // Объект ошибки
+  repeated Priority priorities = 2; // Уровни приоритета
+}
+
+message CreatePriorityRequest {
+  string accessToken = 1;                  // Токен доступа
+  bytes id = 2;                            // Идентификатор приоритета, генерируется клиентом
+  string name = 3;                         // Название
+  string colorHex = 4;                     // Цвет
+  string marks = 5;                        // Знаки
+  double sortOrder = 6;                    // Порядок важности
+  google.protobuf.Timestamp updatedAt = 7; // Время создания на клиенте
+}
+
+message CreatePriorityResponse {
+  optional error.Error error = 1; // Объект ошибки
+}
+
+message UpdatePriorityRequest {
+  string accessToken = 1;                  // Токен доступа
+  bytes id = 2;                            // Идентификатор приоритета
+  optional string name = 3;                // Название
+  optional string colorHex = 4;            // Цвет
+  optional string marks = 5;               // Знаки
+  optional double sortOrder = 6;           // Порядок важности
+  google.protobuf.Timestamp updatedAt = 7; // Время изменения на клиенте, для разрешения конфликтов
+}
+
+message UpdatePriorityResponse {
+  optional error.Error error = 1; // Объект ошибки
+}
+
+message DeletePriorityRequest {
+  string accessToken = 1;                  // Токен доступа
+  bytes id = 2;                            // Идентификатор приоритета
+  google.protobuf.Timestamp updatedAt = 3; // Время удаления на клиенте, для разрешения конфликтов
+}
+
+message DeletePriorityResponse {
+  optional error.Error error = 1; // Объект ошибки
+}
