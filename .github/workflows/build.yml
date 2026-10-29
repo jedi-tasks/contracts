@@ -30,13 +30,13 @@ jobs:
       contents: write
       id-token: write
     steps:
-      # PAT_TOKEN из Vault по GitHub OIDC (роль ci-jedi-tasks-github-pat)
+      # PAT_TOKEN из Vault по GitHub OIDC (роль gh-jedi-tasks-contracts-generate)
       - name: Import secrets from Vault
         uses: hashicorp/vault-action@v3
         with:
           url: https://vault.bonavii.com
           method: jwt
-          role: ci-jedi-tasks-github-pat
+          role: gh-jedi-tasks-contracts-generate
           jwtGithubAudience: https://github.com/jedi-tasks
           secrets: |
             secret/data/ci/jedi-tasks/github-pat PAT_TOKEN
@@ -59,13 +59,13 @@ jobs:
       contents: write
       id-token: write
     steps:
-      # PAT_TOKEN из Vault по GitHub OIDC (роль ci-jedi-tasks-github-pat)
+      # PAT_TOKEN из Vault по GitHub OIDC (роль gh-jedi-tasks-contracts-generate)
       - name: Import secrets from Vault
         uses: hashicorp/vault-action@v3
         with:
           url: https://vault.bonavii.com
           method: jwt
-          role: ci-jedi-tasks-github-pat
+          role: gh-jedi-tasks-contracts-generate
           jwtGithubAudience: https://github.com/jedi-tasks
           secrets: |
             secret/data/ci/jedi-tasks/github-pat PAT_TOKEN
@@ -119,13 +119,13 @@ jobs:
       contents: write
       id-token: write
     steps:
-      # PAT_TOKEN из Vault по GitHub OIDC (роль ci-jedi-tasks-github-pat)
+      # PAT_TOKEN из Vault по GitHub OIDC (роль gh-jedi-tasks-contracts-generate)
       - name: Import secrets from Vault
         uses: hashicorp/vault-action@v3
         with:
           url: https://vault.bonavii.com
           method: jwt
-          role: ci-jedi-tasks-github-pat
+          role: gh-jedi-tasks-contracts-generate
           jwtGithubAudience: https://github.com/jedi-tasks
           secrets: |
             secret/data/ci/jedi-tasks/github-pat PAT_TOKEN
@@ -153,13 +153,13 @@ jobs:
       contents: write
       id-token: write
     steps:
-      # PAT_TOKEN из Vault по GitHub OIDC (роль ci-jedi-tasks-github-pat)
+      # PAT_TOKEN из Vault по GitHub OIDC (роль gh-jedi-tasks-contracts-generate)
       - name: Import secrets from Vault
         uses: hashicorp/vault-action@v3
         with:
           url: https://vault.bonavii.com
           method: jwt
-          role: ci-jedi-tasks-github-pat
+          role: gh-jedi-tasks-contracts-generate
           jwtGithubAudience: https://github.com/jedi-tasks
           secrets: |
             secret/data/ci/jedi-tasks/github-pat PAT_TOKEN
