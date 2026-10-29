@@ -39,7 +39,7 @@ jobs:
           role: ci-tasks-contracts
           jwtGithubAudience: https://github.com/jedi-tasks
           secrets: |
-            secret/data/ci/jedi-tasks/github-deploy PAT_TOKEN
+            secret/data/ci/jedi-tasks/github-token PAT_TOKEN
 
       - uses: actions/checkout@v4
       
@@ -68,7 +68,7 @@ jobs:
           role: ci-tasks-contracts
           jwtGithubAudience: https://github.com/jedi-tasks
           secrets: |
-            secret/data/ci/jedi-tasks/github-deploy PAT_TOKEN
+            secret/data/ci/jedi-tasks/github-token PAT_TOKEN
 
       - uses: actions/checkout@v4
 
@@ -128,7 +128,7 @@ jobs:
           role: ci-tasks-contracts
           jwtGithubAudience: https://github.com/jedi-tasks
           secrets: |
-            secret/data/ci/jedi-tasks/github-deploy PAT_TOKEN
+            secret/data/ci/jedi-tasks/github-token PAT_TOKEN
 
       - uses: actions/checkout@v4
 
@@ -162,7 +162,7 @@ jobs:
           role: ci-tasks-contracts
           jwtGithubAudience: https://github.com/jedi-tasks
           secrets: |
-            secret/data/ci/jedi-tasks/github-deploy PAT_TOKEN
+            secret/data/ci/jedi-tasks/github-token PAT_TOKEN
 
       - uses: actions/checkout@v4
 
