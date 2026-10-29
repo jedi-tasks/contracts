@@ -1,0 +1,72 @@
+name: 'Swift Client Build'
+description: 'Builds Swift client from proto files'
+
+inputs:
+  proto-path:
+    description: 'Path to proto files'
+    required: true
+  repo-path:
+    description: 'Path to output directory for generated Swift files'
+    required: true
+  artifact-name:
+    description: 'Name of the artifact to upload'
+    required: true
+  artifact-name-with-proto:
+    description: 'Name of the artifact to upload with proto files'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install protoc
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y protobuf-compiler git curl unzip
+
+    - name: Setup Swift
+      uses: swift-actions/setup-swift@v2
+      with:
+        swift-version: "6.0"
+
+    - name: Build Swift protoc plugins
+      shell: bash
+      run: |
+        mkdir -p "$HOME/swift-plugins"
+
+        git clone --depth 1 --branch 1.28.2 https://github.com/apple/swift-protobuf.git /tmp/swift-protobuf
+        cd /tmp/swift-protobuf
+        swift build -c release --product protoc-gen-swift
+        cp "$(swift build -c release --show-bin-path)/protoc-gen-swift" "$HOME/swift-plugins/"
+
+        git clone --depth 1 --branch 2.1.1 https://github.com/grpc/grpc-swift-protobuf.git /tmp/grpc-swift-protobuf
+        cd /tmp/grpc-swift-protobuf
+        swift build -c release --product protoc-gen-grpc-swift-2
+        cp "$(swift build -c release --show-bin-path)/protoc-gen-grpc-swift-2" "$HOME/swift-plugins/"
+
+        echo "$HOME/swift-plugins" >> "$GITHUB_PATH"
+
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ inputs.repo-path }}
+
+    - name: Generate Swift files from proto
+      shell: bash
+      run: |
+        mkdir -p ${{ inputs.repo-path }}
+        protoc \
+          --swift_out=${{ inputs.repo-path }} \
+          --grpc-swift_out=${{ inputs.repo-path }} \
+          --swift_opt=Visibility=Public \
+          --plugin=protoc-gen-grpc-swift=$HOME/swift-plugins/protoc-gen-grpc-swift-2 \
+          --grpc-swift_opt=Visibility=Public,Client=true,Server=false \
+          ${{ inputs.proto-path }}
+
+    - name: Upload generated files
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name-with-proto }}
+        path: ${{ inputs.repo-path }}
+        include-hidden-files: true

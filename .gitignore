@@ -1,5 +1,5 @@
 .DS_Store
 .idea
-.build
-.swiftpm
+go-server-grpc-local
+swift-grpc-local
 output.desc

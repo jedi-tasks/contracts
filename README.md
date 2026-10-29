@@ -5,11 +5,11 @@ gRPC-контракты трекера задач jedi-tasks. Контекст �
 ## Состав
 
 - `proto/<сущность>/<сущность>-endpoint.proto` — исходники, по пакету на сущность (как в Coin).
-- `gen/go` — сгенерированный Go, модуль `github.com/jedi-tasks/contracts`, импорт `github.com/jedi-tasks/contracts/gen/go/proto`.
-- `gen/swift` — сгенерированный Swift, SPM-пакет `TasksContracts` (`Package.swift` в корне).
-
-Сгенерированный код коммитится. После правки proto: `make build`. Версия контракта — git-тег `vX.Y.Z`
-на `main`; по нему подключают и сервер (`go get …@vX.Y.Z`), и клиент (SPM).
+- Сгенерированный код здесь не хранится. По тегу `vX.Y.Z` CI (`.github/workflows/build.yml`) генерирует его и пушит
+  с тем же тегом в [go-server-grpc](https://github.com/jedi-tasks/go-server-grpc)
+  (импорт `github.com/jedi-tasks/go-server-grpc/proto`) и [swift-client-grpc](https://github.com/jedi-tasks/swift-client-grpc)
+  (SPM-пакет `ProtoDefinitions`). CI нужен секрет `PAT_TOKEN` с правом записи в эти репозитории.
+- `make build` — локальная генерация для проверки, в `go-server-grpc-local` и `swift-grpc-local` (в git не попадает).
 
 ## Правила контракта
 

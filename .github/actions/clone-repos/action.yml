@@ -1,0 +1,36 @@
+name: 'Clone Repositories'
+description: 'Clones required repositories'
+
+inputs:
+  token:
+    description: 'Git token'
+    required: true
+  user:
+    description: 'Git username'
+    required: true
+  repo-url:
+    description: 'API client repository URL'
+    required: true
+  artifact-name:
+    description: 'Name of the artifact to upload'
+    required: true
+  repo-path:
+    description: 'Path to the repository to clone'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: Clone repository
+      shell: bash
+      run: |
+        git clone https://${{ inputs.user }}:${{ inputs.token }}@${{ inputs.repo-url }}.git ${{ inputs.repo-path }}
+
+    - name: Upload in artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ inputs.repo-path }}
+        include-hidden-files: true
+        retention-days: 1
