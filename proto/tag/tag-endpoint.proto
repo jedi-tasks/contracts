@@ -1,0 +1,116 @@
+syntax = "proto3";
+
+package tag;
+
+option go_package = "/proto";
+
+import "proto/error/error.proto";
+import "google/protobuf/timestamp.proto";
+
+service TagEndpoint {
+  // GetTags получение всех тегов пользователя
+  rpc GetTags (GetTagsRequest) returns (GetTagsResponse) {}
+
+  // CreateTag создание тега
+  rpc CreateTag (CreateTagRequest) returns (CreateTagResponse) {}
+
+  // UpdateTag редактирование тега
+  rpc UpdateTag (UpdateTagRequest) returns (UpdateTagResponse) {}
+
+  // DeleteTag мягкое удаление тега вместе с его связями с задачами
+  rpc DeleteTag (DeleteTagRequest) returns (DeleteTagResponse) {}
+
+  // GetTasksToTags получение связей задач и тегов
+  rpc GetTasksToTags (GetTasksToTagsRequest) returns (GetTasksToTagsResponse) {}
+
+  // AddTagToTask привязка тега к задаче
+  rpc AddTagToTask (AddTagToTaskRequest) returns (AddTagToTaskResponse) {}
+
+  // RemoveTagFromTask отвязка тега от задачи
+  rpc RemoveTagFromTask (RemoveTagFromTaskRequest) returns (RemoveTagFromTaskResponse) {}
+}
+
+message Tag {
+  bytes id = 1;                            // Идентификатор тега
+  string name = 2;                         // Название тега
+  google.protobuf.Timestamp updatedAt = 3; // Дата и время последнего изменения
+}
+
+message TaskToTag {
+  bytes taskID = 1;                        // Идентификатор задачи
+  bytes tagID = 2;                         // Идентификатор тега
+  google.protobuf.Timestamp updatedAt = 3; // Дата и время последнего изменения
+}
+
+message GetTagsRequest {
+  string accessToken = 1; // Токен доступа
+}
+
+message GetTagsResponse {
+  optional error.Error error = 1; // Объект ошибки
+  repeated Tag tags = 2;           // Теги
+}
+
+message CreateTagRequest {
+  string accessToken = 1;                  // Токен доступа
+  bytes id = 2;                            // Идентификатор тега, генерируется клиентом
+  string name = 3;                         // Название тега
+  google.protobuf.Timestamp updatedAt = 4; // Время создания на клиенте
+}
+
+message CreateTagResponse {
+  optional error.Error error = 1; // Объект ошибки
+}
+
+message UpdateTagRequest {
+  string accessToken = 1;                  // Токен доступа
+  bytes id = 2;                            // Идентификатор тега
+  optional string name = 3;                // Название тега
+  google.protobuf.Timestamp updatedAt = 4; // Время изменения на клиенте, для разрешения конфликтов
+}
+
+message UpdateTagResponse {
+  optional error.Error error = 1; // Объект ошибки
+}
+
+message DeleteTagRequest {
+  string accessToken = 1;                  // Токен доступа
+  bytes id = 2;                            // Идентификатор тега
+  google.protobuf.Timestamp updatedAt = 3; // Время удаления на клиенте, для разрешения конфликтов
+}
+
+message DeleteTagResponse {
+  optional error.Error error = 1; // Объект ошибки
+}
+
+message GetTasksToTagsRequest {
+  string accessToken = 1;      // Токен доступа
+  repeated bytes taskIDs = 2;  // Фильтр по задачам, пустой — все
+}
+
+message GetTasksToTagsResponse {
+  optional error.Error error = 1;      // Объект ошибки
+  repeated TaskToTag tasksToTags = 2;  // Связи задач и тегов
+}
+
+message AddTagToTaskRequest {
+  string accessToken = 1;                  // Токен доступа
+  bytes taskID = 2;                        // Идентификатор задачи
+  bytes tagID = 3;                         // Идентификатор тега
+  google.protobuf.Timestamp updatedAt = 4; // Время действия на клиенте
+}
+
+message AddTagToTaskResponse {
+  optional error.Error error = 1; // Объект ошибки
+}
+
+message RemoveTagFromTaskRequest {
+  string accessToken = 1;                  // Токен доступа
+  bytes taskID = 2;                        // Идентификатор задачи
+  bytes tagID = 3;                         // Идентификатор тега
+  google.protobuf.Timestamp updatedAt = 4; // Время действия на клиенте
+}
+
+message RemoveTagFromTaskResponse {
+  optional error.Error error = 1; // Объект ошибки
+}

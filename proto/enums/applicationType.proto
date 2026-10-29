@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package applicationType;
+
+option go_package = "/proto";
+
+enum ApplicationType {
+  Unspecified = 0;
+  IOS = 1;
+  Android = 2;
+  Web = 3;
+  Server = 4;
+}

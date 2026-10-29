@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package errorCategory;
+
+option go_package = "/proto";
+
+enum ErrorCategory {
+  Unspecified = 0;
+  Internal = 1;            // Внутренняя ошибка сервера
+  NeedToLogout = 2;        // Требуется разлогинить пользователя
+  NeedToSync = 3;          // Требуется синхронизация устройства
+  Other = 4;               // Прочие ошибки
+  NeedToRefreshToken = 5;  // Требуется обновить access-токен
+}

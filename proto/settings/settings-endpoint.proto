@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package settings;
+
+option go_package = "/proto";
+
+import "proto/error/error.proto";
+import "proto/enums/applicationType.proto";
+import "proto/enums/sortMode.proto";
+import "google/protobuf/timestamp.proto";
+
+service SettingsEndpoint {
+  // GetSettings получение пользовательских настроек
+  rpc GetSettings (GetSettingsRequest) returns (GetSettingsResponse) {}
+
+  // UpdateSettings редактирование пользовательских настроек
+  rpc UpdateSettings (UpdateSettingsRequest) returns (UpdateSettingsResponse) {}
+
+  // GetVersion получение текущей версии сервера
+  rpc GetVersion (GetVersionRequest) returns (GetVersionResponse) {}
+}
+
+// Settings — настройки пользователя, общие для всех его устройств
+message Settings {
+  uint32 dailyCapacityMinutes = 1;              // Дневной лимит загрузки в минутах (по умолчанию 360)
+  sortMode.SortMode todaySortMode = 2;          // Режим сортировки экрана «Сегодня»
+  google.protobuf.Timestamp updatedAt = 3;      // Дата и время последнего изменения
+}
+
+message Version {
+  string version = 1; // Версия приложения
+  string build = 2;   // Номер сборки
+}
+
+message GetSettingsRequest {
+  string accessToken = 1; // Токен доступа
+}
+
+message GetSettingsResponse {
+  optional error.Error error = 1; // Объект ошибки
+  optional Settings settings = 2;  // Настройки пользователя
+}
+
+message UpdateSettingsRequest {
+  string accessToken = 1;                      // Токен доступа
+  optional uint32 dailyCapacityMinutes = 2;    // Дневной лимит загрузки в минутах
+  optional sortMode.SortMode todaySortMode = 3; // Режим сортировки экрана «Сегодня»
+  google.protobuf.Timestamp updatedAt = 4;     // Время изменения на клиенте, для разрешения конфликтов
+}
+
+message UpdateSettingsResponse {
+  optional error.Error error = 1; // Объект ошибки
+}
+
+message GetVersionRequest {
+  applicationType.ApplicationType applicationType = 1; // Тип приложения (ios, android, web)
+}
+
+message GetVersionResponse {
+  optional error.Error error = 1; // Объект ошибки
+  optional Version version = 2;    // Версия сервера
+}

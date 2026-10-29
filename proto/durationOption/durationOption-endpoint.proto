@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package durationOption;
+
+option go_package = "/proto";
+
+import "proto/error/error.proto";
+import "google/protobuf/timestamp.proto";
+
+service DurationOptionEndpoint {
+  // GetDurationOptions получение справочника длительностей
+  rpc GetDurationOptions (GetDurationOptionsRequest) returns (GetDurationOptionsResponse) {}
+
+  // CreateDurationOption создание значения длительности
+  rpc CreateDurationOption (CreateDurationOptionRequest) returns (CreateDurationOptionResponse) {}
+
+  // UpdateDurationOption редактирование значения длительности
+  rpc UpdateDurationOption (UpdateDurationOptionRequest) returns (UpdateDurationOptionResponse) {}
+
+  // DeleteDurationOption мягкое удаление значения длительности
+  rpc DeleteDurationOption (DeleteDurationOptionRequest) returns (DeleteDurationOptionResponse) {}
+}
+
+// DurationOption — значение из справочника длительностей
+message DurationOption {
+  bytes id = 1;                            // Идентификатор значения
+  string title = 2;                        // Подпись, например «30 мин»
+  int32 minutes = 3;                       // Минуты. Меньше нуля — «непрогнозируемо долго», в сумму не входит
+  google.protobuf.Timestamp updatedAt = 4; // Дата и время последнего изменения
+}
+
+message GetDurationOptionsRequest {
+  string accessToken = 1; // Токен доступа
+}
+
+message GetDurationOptionsResponse {
+  optional error.Error error = 1;             // Объект ошибки
+  repeated DurationOption durationOptions = 2; // Значения справочника
+}
+
+message CreateDurationOptionRequest {
+  string accessToken = 1;                  // Токен доступа
+  bytes id = 2;                            // Идентификатор значения, генерируется клиентом
+  string title = 3;                        // Подпись
+  int32 minutes = 4;                       // Минуты
+  google.protobuf.Timestamp updatedAt = 5; // Время создания на клиенте
+}
+
+message CreateDurationOptionResponse {
+  optional error.Error error = 1; // Объект ошибки
+}
+
+message UpdateDurationOptionRequest {
+  string accessToken = 1;                  // Токен доступа
+  bytes id = 2;                            // Идентификатор значения
+  optional string title = 3;               // Подпись
+  optional int32 minutes = 4;              // Минуты
+  google.protobuf.Timestamp updatedAt = 5; // Время изменения на клиенте, для разрешения конфликтов
+}
+
+message UpdateDurationOptionResponse {
+  optional error.Error error = 1; // Объект ошибки
+}
+
+message DeleteDurationOptionRequest {
+  string accessToken = 1;                  // Токен доступа
+  bytes id = 2;                            // Идентификатор значения
+  google.protobuf.Timestamp updatedAt = 3; // Время удаления на клиенте, для разрешения конфликтов
+}
+
+message DeleteDurationOptionResponse {
+  optional error.Error error = 1; // Объект ошибки
+}

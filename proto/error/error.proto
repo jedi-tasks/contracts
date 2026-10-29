@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package error;
+
+option go_package = "/proto";
+
+import "proto/enums/errorCategory.proto";
+
+message Error {
+  errorCategory.ErrorCategory category = 1; // Категория ошибки
+  string message = 2; // Описание ошибки
+  string systemMessage = 3; // Системное описание ошибки
+  map<string, string> params = 4; // Дополнительная информация об ошибке
+}
+
+message OnlyError {
+  optional Error error = 1; // Объект ошибки, если есть
+}
